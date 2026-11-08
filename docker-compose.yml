@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres:16
+    container_name: survey-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: survey
+    ports:
+      - "5433:5432"
+    volumes:
+      - survey_data:/var/lib/postgresql/data
+      # Scripts here run once, on first start, to build the database
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+      # Put survey_instance.dump in ./db before the first start
+      - ./db:/seed:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d survey"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  survey_data:
